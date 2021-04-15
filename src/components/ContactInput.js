@@ -1,41 +1,47 @@
-import { useRef, useState } from 'react'
-import { LoadingSpinner } from '../assets/icons'
+import { useRef, useState } from "react";
+import { LoadingSpinner } from "../assets/icons";
 
-export default function ContactInput({ setContacts, contacts }) {
-  const nameInputRef = useRef()
-  const phoneInputRef = useRef()
+// React Redux
+import { useDispatch } from "react-redux";
+import { addContact } from "../store/contactSlice";
 
-  const [loading, setLoading] = useState(false)
+export default function ContactInput() {
+  const dispatch = useDispatch();
+
+  const nameInputRef = useRef();
+  const phoneInputRef = useRef();
+
+  const [loading, setLoading] = useState(false);
 
   const submitForm = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    const name = nameInputRef.current.value
-    const phone = phoneInputRef.current.value
+    const name = nameInputRef.current.value;
+    const phone = phoneInputRef.current.value;
 
-    if (name === '' || phone === '') return
+    if (name === "" || phone === "") return;
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/contacts', {
-        method: 'POST',
+      const res = await fetch("http://localhost:5000/contacts", {
+        method: "POST",
         body: JSON.stringify({ name, phone }),
-        headers: { 'Content-Type': 'application/json' },
-      })
+        headers: { "Content-Type": "application/json" },
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
-      nameInputRef.current.value = ''
-      phoneInputRef.current.value = ''
+      nameInputRef.current.value = "";
+      phoneInputRef.current.value = "";
 
-      setContacts([...contacts, data])
+      dispatch(addContact(data));
     } catch (err) {
-      console.log(err)
+      console.log(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -59,10 +65,10 @@ export default function ContactInput({ setContacts, contacts }) {
           </div>
           <button type="submit" className="add-button" disabled={loading}>
             {loading && <LoadingSpinner className="spinner" />}
-            {loading ? 'Adding' : 'Add'}
+            {loading ? "Adding" : "Add"}
           </button>
         </div>
       </form>
     </>
-  )
+  );
 }

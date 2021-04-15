@@ -1,18 +1,47 @@
-import { DeleteIcon, PhoneIcon, UserIcon } from '../assets/icons'
+import { useState, useEffect } from "react";
 
-export default function ContactList({ contacts, loading, setContacts }) {
-  const deleteContact = async (id) => {
-    if (!window.confirm('Are you sure?')) return
+import { DeleteIcon, PhoneIcon, UserIcon } from "../assets/icons";
+
+// React Redux
+import { setContacts, deleteContact } from "../store/contactSlice";
+import { useDispatch, useSelector } from "react-redux";
+
+export default function ContactList() {
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  const contacts = useSelector((state) => state.contacts.contacts);
+
+  const removeContact = async (id) => {
+    if (!window.confirm("Are you sure?")) return;
     try {
       await fetch(`http://localhost:5000/contacts/${id}`, {
-        method: 'DELETE',
-      })
-
-      setContacts(contacts.filter((c) => c.id !== id))
+        method: "DELETE",
+      });
+      dispatch(deleteContact(id));
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
+
+  const fetchContacts = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/contacts");
+      const data = await res.json();
+      dispatch(setContacts(data));
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(
+    () => fetchContacts(),
+    // eslint-disable-next-line
+    []
+  );
 
   return (
     <div className="contacts-wrapper">
@@ -27,7 +56,7 @@ export default function ContactList({ contacts, loading, setContacts }) {
             <div className="relative w-full p-2">
               <button
                 className="delete-button"
-                onClick={() => deleteContact(contact.id)}
+                onClick={() => removeContact(contact.id)}
               >
                 <DeleteIcon />
               </button>
@@ -49,5 +78,5 @@ export default function ContactList({ contacts, loading, setContacts }) {
         <p>Loading..</p>
       ) : null}
     </div>
-  )
+  );
 }
